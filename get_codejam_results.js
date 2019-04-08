@@ -1,19 +1,19 @@
 // Every contest seems to have a contest id, change it to the one you need
 // The ids can be found at https://codejam.googleapis.com/poll?p=e30 (you'll need to use a base 64 decoder to get a json object with all contests)
-var contest_id = "0000000000051705";
+var contest_id = "0000000000051705"
 
 // The url of the scoreboard
-var site_url = "https://codejam.googleapis.com/scoreboard/" + contest_id + "/poll?p=";
+var site_url = "https://codejam.googleapis.com/scoreboard/" + contest_id + "/poll?p="
 
 // The country that is being filtered
-var country = "Lithuania";
+var country = "Lithuania"
 
 
 ////////////////////////////////////////////////////////////////
 // The following functions are magic copied from the js files found in the contest website
 
-var atob = require('atob');
-var Base64 = require('js-base64').Base64;
+var atob = require('atob')
+var Base64 = require('js-base64').Base64
 var request = require('request')
 var fromCharCode = String.fromCharCode
 
@@ -50,34 +50,49 @@ async function get_scoreboard(min_rank, num_users){
 	var request_object = {
 	    min_rank: min_rank,
 	    num_consecutive_users: num_users
-	};
-	var request_string = Base64.encodeURI(JSON.stringify(request_object));
+	}
+	var request_string = Base64.encodeURI(JSON.stringify(request_object))
 	return new Promise((resolve, reject) => {
 		request(site_url + request_string, function (error, response, body) {
-			var response_object = JSON.parse(decode(body));
-			resolve(response_object);
+			var response_object = JSON.parse(decode(body))
+			resolve(response_object)
 		}
-	)});
+	)})
 }
 
 // Get scores of num_users participants starting from min_rank
 async function get_scoreboard_entries(min_rank, num_users){
-	return (await get_scoreboard(min_rank, num_users)).user_scores;
+	return (await get_scoreboard(min_rank, num_users)).user_scores
+}
+
+function pad_zeros(a){
+	return(100+a+"").slice(-2)
+}
+
+function seconds_to_time(s){
+	var date = new Date(null);
+	date.setSeconds(s);
+	return pad_zeros(date.getUTCHours() + (date.getUTCDate()-1)*24) + ':' 
+	       + pad_zeros(date.getUTCMinutes()) + ':' +  
+	       + pad_zeros(date.getUTCSeconds())
 }
 
 // Print all participants from the specified country with their rank and score
 async function print_all_from_country(){
 	// There seems to be a limit to the iteration_increment. 
 	// Anything significantly larger than 200 seems to return an empty list
-	var iteration_increment = 200;
+	var iteration_increment = 200
 
-	var scoreboard_size = (await get_scoreboard(1, 1)).full_scoreboard_size;
+	var scoreboard_size = (await get_scoreboard(1, 1)).full_scoreboard_size
 
 	for(min_rank = 1; min_rank < scoreboard_size; min_rank += iteration_increment){
-		var new_entries = await get_scoreboard_entries(min_rank, Math.min(scoreboard_size - min_rank + 1, iteration_increment));
+		var new_entries = await get_scoreboard_entries(min_rank, Math.min(scoreboard_size - min_rank + 1, iteration_increment))
 		for(user of new_entries){
 			if(user.country == country){
-				console.log(user.displayname, user.rank, user.score_1)
+				// The following statement assumes that the second score is available and represents negative time in millionths of seconds
+				// If this is not the case for some contest, use the commented line instead
+				console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points in " + seconds_to_time(-user.score_2/1000000))
+				// console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points")
 			}
 		}
 	}
