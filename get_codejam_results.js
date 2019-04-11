@@ -47,14 +47,14 @@ function decode(e){
 
 // Gets scoreboard of num_users participants starting from min_rank
 // This includes the scores as well as additional info about the contest
-async function get_scoreboard(min_rank, num_users){
+function get_scoreboard(min_rank, num_users){
 	var request_object = {
 	    min_rank: min_rank,
 	    num_consecutive_users: num_users
 	}
 	var request_string = Base64.encodeURI(JSON.stringify(request_object))
 	return new Promise((resolve, reject) => {
-		request(site_url + request_string, function (error, response, body) {
+		request(site_url + request_string, (error, response, body) => {
 			var response_object = JSON.parse(decode(body))
 			resolve(response_object)
 		}
@@ -62,7 +62,7 @@ async function get_scoreboard(min_rank, num_users){
 }
 
 // Extract user scores from a scoreboard
-async function get_user_scores(min_rank, num_users){
+function get_user_scores(min_rank, num_users){
 	return get_scoreboard(min_rank, num_users).then((scorebard) => {
 		return scorebard.user_scores
 	})
