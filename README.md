@@ -28,4 +28,4 @@ node get_codejam_results.js > path/to/output/file
 ```
 
 If you want to use the scoreboard data for some other reason, you can access it in the Promise.all block in the `print_all_from_country` function.
-The data will be available as downloaded , so in blocks of `iteration_increment` (200 by default), except for possibly the last element if the scoreboard size is not a multiple of `iteration_increment`.
+The data will be available as downloaded, so in blocks of `iteration_increment` (200 by default), except for possibly the last element if the scoreboard size is not a multiple of `iteration_increment`.
