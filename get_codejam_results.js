@@ -1,11 +1,10 @@
-// Every contest seems to have a contest id, change it to the one you need
-// The ids can be found at https://codejam.googleapis.com/poll?p=e30 (you'll need to use a base 64 decoder to get a json object with all contests)
-var contest_id = "0000000000051705"
-
-// The url of the scoreboard
-var site_url = "https://codejam.googleapis.com/scoreboard/" + contest_id + "/poll?p="
+// Every round of every contest has a unique id. Replace it with the id that you want
+// To get a list of all available ids simply run "node print_contest_ids.js"
+// Alternatively, you can set the contest_id to "most recent", and then the results of the most recent (including currently happening) round will be shown
+var contest_id = "most recent"
 
 // The country that is being filtered
+// Feel free to change it to any value in the possible_countries list below
 var country = "Lithuania"
 
 // Make sure that the country above is one of the countries below
@@ -16,6 +15,8 @@ if(!possible_countries.includes(country)){
 	console.log("The provided country is not one of the available ones. \nMake sure you didn't make a typo and try again")
 	process.exit()
 }
+
+var site_url = null
 
 ////////////////////////////////////////////////////////////////
 // The following functions perform some magic modified base64 conversion 
@@ -52,6 +53,47 @@ function decode(e){
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////
+
+// get_contests().then((contests) => {
+// 	console.log("Ids of Google competitions:\n")
+// 	for(contest of contests){
+// 		console.log(contest.title)
+// 		contest.challenges.sort((a, b) => {
+// 			return a.start_ms - b.start_ms
+// 		})
+// 		for(round of contest.challenges){
+// 			console.log("    ", round.title, "id:", round.id)
+// 		}
+// 	}
+// })
+
+function get_most_recent_contest_id(){
+	var request_object = {}
+	var request_string = Base64.encodeURI(JSON.stringify(request_object))
+	return new Promise((resolve, reject) => {
+		request("https://codejam.googleapis.com/poll?p=" + request_string, (error, response, body) => {
+			// Get object with all contests
+			var contests = JSON.parse(decode(body)).adventures
+			var cur_time = new Date().getTime();
+
+			// Store the most recent contest here
+			var recent_time = 0
+			var recent_id = null
+
+			for(contest of contests){
+				for(round of contest.challenges){
+					// Check if the round has already started and is more recent than others checked so far
+					if(round.start_ms <= cur_time && round.start_ms > recent_time){
+						recent_time = round.start_ms
+						recent_id = round.id
+					}
+				}
+			}
+			// Return id of most recent round
+			resolve(recent_id)
+		}
+	)})
+}
 
 // Gets scoreboard of num_users participants starting from min_rank
 // This includes the scores as well as additional info about the contest
@@ -95,13 +137,18 @@ function score_2_to_time(score_2){
 
 // Print all participants from the specified country with their rank and score
 async function print_all_from_country(){
+	if(contest_id == "most recent"){
+		contest_id = await get_most_recent_contest_id();
+	}
+	// The url of the scoreboard
+	site_url = "https://codejam.googleapis.com/scoreboard/" + contest_id + "/poll?p="
+
 	// There seems to be a limit to the iteration_increment. 
 	// Anything significantly larger than 200 seems to return an empty list
 	var iteration_increment = 200
 
 	// Initial call to get the scoreboard size
 	var scoreboard_size = (await get_scoreboard(1, 1)).full_scoreboard_size
-
 	// List to store the request promises
 	block_entries = []
 	for(min_rank = 1; min_rank < scoreboard_size; min_rank += iteration_increment){
