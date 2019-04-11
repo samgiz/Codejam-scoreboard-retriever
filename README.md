@@ -12,6 +12,7 @@ npm install
 
 ## Usage
 You will need to set the the contest id and country in the script (the variables are located at the top of the script)
+By default the contest id is set to the most recent contest, and the country that is being filtered is Lithuania
 Further instructions can be found in the script itself.
 
 Once you have set the country and contest id, run the script as follows to print the filtered results in the terminal:
