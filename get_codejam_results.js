@@ -60,11 +60,6 @@ async function get_scoreboard(min_rank, num_users){
 	)})
 }
 
-// Get scores of num_users participants starting from min_rank
-async function get_scoreboard_entries(min_rank, num_users){
-	return (await get_scoreboard(min_rank, num_users)).user_scores
-}
-
 function pad_zeros(a){
 	return(100+a+"").slice(-2)
 }
@@ -84,18 +79,23 @@ async function print_all_from_country(){
 	var iteration_increment = 200
 
 	var scoreboard_size = (await get_scoreboard(1, 1)).full_scoreboard_size
-
+	entries = []
 	for(min_rank = 1; min_rank < scoreboard_size; min_rank += iteration_increment){
-		var new_entries = await get_scoreboard_entries(min_rank, Math.min(scoreboard_size - min_rank + 1, iteration_increment))
-		for(user of new_entries){
-			if(user.country == country){
-				// The following statement assumes that the second score is available and represents negative time in millionths of seconds
-				// If this is not the case for some contest, use the commented line instead
-				console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points in " + seconds_to_time(-user.score_2/1000000))
-				// console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points")
+		entries.push(get_scoreboard(min_rank, Math.min(scoreboard_size - min_rank + 1, iteration_increment)))
+	}
+	Promise.all(entries).then((entries) =>{
+		for(entry of entries){
+			var user_entries = entry.user_scores
+			for(user of user_entries){
+				if(user.country == country){
+					// The following statement assumes that the second score is available and represents negative time in millionths of seconds
+					// If this is not the case for some contest, use the commented line instead
+					console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points in " + seconds_to_time(-user.score_2/1000000))
+					// console.log(user.rank + '. ' + user.displayname + ': ' +  user.score_1 + " points")
+				}
 			}
 		}
-	}
+	})
 }
 // initial call
 print_all_from_country()
