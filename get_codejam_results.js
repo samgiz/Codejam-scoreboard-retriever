@@ -121,7 +121,7 @@ function get_user_scores(min_rank, num_users){
 // Add leading zeros to integer so it has >=2 digits
 function pad_zeros(a){
 	if(a >= 100) return str(a)
-	return(100+a+"").slice(-2)
+	return (100+a+"").slice(-2)
 }
 
 // Convert from score_2 in retrieved information to human readable format (HH:MM:SS)
@@ -131,7 +131,7 @@ function score_2_to_time(score_2){
 	var date = new Date(null);
 	date.setSeconds(s);
 	return pad_zeros(date.getUTCHours() + (date.getUTCDate()-1)*24) + ':' 
-	       + pad_zeros(date.getUTCMinutes()) + ':' +  
+	       + pad_zeros(date.getUTCMinutes()) + ':'  
 	       + pad_zeros(date.getUTCSeconds())
 }
 
@@ -148,7 +148,12 @@ async function print_all_from_country(){
 	var iteration_increment = 200
 
 	// Initial call to get the scoreboard size
-	var scoreboard_size = (await get_scoreboard(1, 1)).full_scoreboard_size
+	var scoreboard = (await get_scoreboard(1, 1))
+	var scoreboard_size = scoreboard.full_scoreboard_size
+	console.log("Getting results for", scoreboard.challenge.title)
+	console.log("Scoreboard size:", scoreboard.full_scoreboard_size)
+	console.log()
+
 	// List to store the request promises
 	block_entries = []
 	for(min_rank = 1; min_rank < scoreboard_size; min_rank += iteration_increment){

@@ -58,8 +58,8 @@ get_contests().then((contests) => {
 		contest.challenges.sort((a, b) => {
 			return a.start_ms - b.start_ms
 		})
-		for(competition of contest.challenges){
-			console.log("    ", competition.title, "id:", competition.id)
+		for(round of contest.challenges){
+			console.log("    ", round.title, "id:", round.id)
 		}
 	}
 })
