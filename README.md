@@ -2,7 +2,8 @@
 Some simple code to retrieve a Codejam round scoreboard and filter the entries by country
 
 ## Setup
-You will need to have node.js and npm installed (more information [here](https://nodejs.org/en/))
+You will need to have node.js and npm installed (more information [here](https://nodejs.org/en/)).
+
 I'm using node version 11.13.0 and npm version 6.7.0. Anything above 8.0.0 should work for node, many lower npm versions should also work fine.
 Once npm is set up, install dependencies with the following command:
 
